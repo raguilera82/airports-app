@@ -117,13 +117,7 @@ run:
     - mkdir -p ${HOME}/.kube
     - cp k8s-config ${HOME}/.kube/config
     - kubectl version
-    #- kubectl create namespace ${CI_PROJECT_PATH_SLUG}
-    - helm install --namespace=${CI_PROJECT_PATH_SLUG} --name=${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} ./airports-app-chart \
-      --set replicaCount=1 \
-      --set id=${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} \
-      --set phase=${CI_COMMIT_REF_SLUG} \
-      --set image.repository=${DR_URL}/${CI_COMMIT_REF_SLUG}:${APP_VERSION} \
-      --set database_pass=${DATABASE_PASS}
+    - helm install --namespace=${CI_PROJECT_PATH_SLUG} --name=${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} ./airports-app-chart --set replicaCount=1 --set id=${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} --set phase=${CI_COMMIT_REF_SLUG} --set image.repository=${DR_URL}/${CI_COMMIT_REF_SLUG}:${APP_VERSION} --set database_pass=${DATABASE_PASS}
     - kubectl get all,ing -l app=${CI_COMMIT_REF_SLUG} --namespace=${CI_PROJECT_PATH_SLUG}
   tags:
     - docker
@@ -179,7 +173,7 @@ run:
   #   - docker
 # 
 stop:
-  image: alpine:3.7
+  image: dtzar/helm-kubectl
   stage: stop
   environment:
     name: ${CI_COMMIT_REF_SLUG}
@@ -192,12 +186,10 @@ stop:
     - calculate-version
   when: manual
   script:
-    - apk update  && apk add --no-cache curl grep
-    - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-    - chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl
     - mkdir -p ${HOME}/.kube
-    - cat ${KUBECONFIG} > $HOME/.kube/config
+    - cp k8s-config ${HOME}/.kube/config
     - kubectl version
+    - helm del --purge ${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG}
     - kubectl delete ing -l app=${CI_COMMIT_REF_SLUG} --namespace=${CI_PROJECT_PATH_SLUG}
     - kubectl delete all -l app=${CI_COMMIT_REF_SLUG} --namespace=${CI_PROJECT_PATH_SLUG}
   tags:

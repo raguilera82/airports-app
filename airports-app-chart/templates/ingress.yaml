@@ -11,5 +11,5 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: {{ .Values.id }}.{{ .Values.phase }}
+          serviceName: {{ .Values.id }}-{{ .Values.phase }}
           servicePort: 8080
