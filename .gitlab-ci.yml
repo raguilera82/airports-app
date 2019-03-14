@@ -117,61 +117,12 @@ run:
     - mkdir -p ${HOME}/.kube
     - cp k8s-config ${HOME}/.kube/config
     - kubectl version
-    - helm install --namespace=${CI_PROJECT_PATH_SLUG} --name=${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} ./airports-app-chart --set replicaCount=1 --set id=${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} --set phase=${CI_COMMIT_REF_SLUG} --set image.repository=${DR_URL}/${CI_COMMIT_REF_SLUG}:${APP_VERSION} --set database_pass=${DATABASE_PASS}
+    - helm install --namespace=${CI_PROJECT_PATH_SLUG} --name=${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} ./airports-app-chart --set replicaCount=1 --set id=${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} --set phase=${CI_COMMIT_REF_SLUG} --set image.repository=${DR_URL}/${CI_COMMIT_REF_SLUG} --set image.tag=${APP_VERSION} --set database_pass=${DATABASE_PASS} --set suffix="-local"  --set domain="tntformacion.com"
     - kubectl get all,ing -l app=${CI_COMMIT_REF_SLUG} --namespace=${CI_PROJECT_PATH_SLUG}
   tags:
     - docker
 
-# run:
-#   image: alpine:3.7
-#   stage: run
-#   environment:
-#     name: ${CI_COMMIT_REF_SLUG}
-#     url: http://${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG}-local.tntformacion.com/version
-#   only:
-#     - /^release.*$/
-#     - master
-#     - develop
-#   dependencies:
-#     - calculate-version
-#   script:
-#     - APP_VERSION="$(grep -v '\[' version.log)"
-#     - apk update  && apk add --no-cache curl grep
-#     - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-#     - chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl
-#     - mkdir -p ${HOME}/.kube
-#     - cp k8s-config ${HOME}/.kube/config
-#     - kubectl version
-#     - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get > get_helm.sh
-#     - chmod 700 get_helm.sh
-#     - ./get_helm.sh
-#     - kubectl create namespace ${CI_PROJECT_PATH_SLUG}
-#     - helm install --name ${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} ./airports-app-chart\
-#       --set replicaCount=1 \
-#       --set id=${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} \
-#       --set phase=${CI_COMMIT_REF_SLUG} \
-#       --set namespace=${CI_PROJECT_PATH_SLUG} \
-#       --set image.repository=${DR_URL}/${CI_COMMIT_REF_SLUG}:${APP_VERSION} \
-#       --set database_pass=${DATABASE_PASS}
-    #- cd manifests/
-    #- sed -i "s/__CI_COMMIT_REF_SLUG__/${CI_COMMIT_REF_SLUG}/" deployment.yaml ingress.yaml service.yaml
-    #- sed -i "s/__CI_PROJECT_PATH_SLUG__/${CI_PROJECT_PATH_SLUG}/" deployment.yaml ingress.yaml service.yaml
-    #- sed -i "s/__VERSION__/${APP_VERSION}/" deployment.yaml ingress.yaml service.yaml
-    #- sed -i "s/__DATABASE_PASS__/${DATABASE_PASS}/" deployment.yaml
-    #- sed -i "s/__DOCKER_URL__/${DR_URL}/" deployment.yaml
-    #- sed -i "s/__CI_PROJECT_NAMESPACE__/${CI_PROJECT_NAMESPACE}/" deployment.yaml
-    #- sed -i "s/__CI_PROJECT_NAME__/${CI_PROJECT_NAME}/" deployment.yaml
-    #- cat deployment.yaml
-    #- cat service.yaml
-    #- cat ingress.yaml
-    #- kubectl apply -f deployment.yaml
-    #- kubectl apply -f service.yaml
-    #- kubectl apply -f ingress.yaml
-    #- kubectl rollout status -f deployment.yaml
-  #   - kubectl get all,ing -l app=${CI_COMMIT_REF_SLUG} --namespace=${CI_PROJECT_PATH_SLUG}
-  # tags:
-  #   - docker
-# 
+
 stop:
   image: dtzar/helm-kubectl
   stage: stop
@@ -190,7 +141,5 @@ stop:
     - cp k8s-config ${HOME}/.kube/config
     - kubectl version
     - helm del --purge ${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG}
-    - kubectl delete ing -l app=${CI_COMMIT_REF_SLUG} --namespace=${CI_PROJECT_PATH_SLUG}
-    - kubectl delete all -l app=${CI_COMMIT_REF_SLUG} --namespace=${CI_PROJECT_PATH_SLUG}
   tags:
     - docker

@@ -6,6 +6,8 @@ replicaCount: 1
 id: "generic-name"
 phase: "int"
 namespace: "generic-namespace"
+suffix: "-generic"
+domain: "generic-domain"
 
 database_pass: "notrealpassword"
 

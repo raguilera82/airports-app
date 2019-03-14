@@ -6,7 +6,7 @@ metadata:
     app: {{ .Values.id }}
 spec:
   rules:
-  - host: {{ .Values.id }}.{{ .Values.phase }}.tntformacion.com
+  - host: {{ .Values.phase }}.{{ .Values.id }}{{ .Values.suffix }}{{ .Values.domain }}
     http:
       paths:
       - path: /
