@@ -118,7 +118,7 @@ run:
     - cp k8s-config ${HOME}/.kube/config
     - kubectl version
     - kubectl create namespace ${CI_PROJECT_PATH_SLUG}
-    - helm install --namespace=${CI_PROJECT_PATH_SLUG} --name ${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} ./airports-app-chart\
+    - helm install --namespace=${CI_PROJECT_PATH_SLUG} --name=${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} ./airports-app-chart \
       --set replicaCount=1 \
       --set id=${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} \
       --set phase=${CI_COMMIT_REF_SLUG} \
