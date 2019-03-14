@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.id }}
-  namespace: {{ .Values.namespace }}
   labels:
     app: {{ .Values.id }}
     version: {{ .Values.tag }}
@@ -24,7 +23,7 @@ spec:
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         env:
           - name: DATABASE_HOST
-            value: 'mysql-external'
+            value: '10.15.171.201'
           - name: DATABASE_PORT
             value: '3306'
           - name: DATABASE_NAME
