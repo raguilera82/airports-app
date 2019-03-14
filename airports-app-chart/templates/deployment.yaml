@@ -23,7 +23,7 @@ spec:
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         env:
           - name: DATABASE_HOST
-            value: 'mysql-external'
+            value: 'mysql-db-local.tntformacion.com'
           - name: DATABASE_PORT
             value: '3306'
           - name: DATABASE_NAME
