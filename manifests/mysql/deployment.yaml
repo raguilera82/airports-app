@@ -1,0 +1,44 @@
+
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: airports-db
+  namespace: devops-app
+spec:
+  selector:
+    matchLabels:
+      app: airports-db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: airports-db
+    spec:
+      containers:
+      - image: mysql:5.7
+        name: airports-db
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-pass
+              key: password
+        - name: MYSQL_DATABASE
+          value: 'devops'
+        - name: MYSQL_USER
+          value: 'devops'
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-pass
+              key: password 
+        ports:
+        - containerPort: 3306
+          name: airports-db
+        volumeMounts:
+        - name: airports-db-volume
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: airports-db-volume
+        emptyDir: {}

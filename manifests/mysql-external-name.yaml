@@ -1,0 +1,7 @@
+kind: Service
+apiVersion: v1
+metadata:
+ name: mysql-external
+spec:
+ type: ExternalName
+ externalName: rancher.tntformacion.com

@@ -1,0 +1,9 @@
+kind: Service
+apiVersion: v1
+metadata:
+ name: mysql-external
+spec:
+ type: ClusterIP
+ ports:
+ - port: 3306
+   targetPort: 3306

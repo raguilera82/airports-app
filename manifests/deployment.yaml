@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: __CI_COMMIT_REF_SLUG__
+  namespace: __CI_PROJECT_PATH_SLUG__
+  labels:
+    app: __CI_COMMIT_REF_SLUG__
+    track: stable
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: __CI_COMMIT_REF_SLUG__
+  template:
+    metadata:
+      labels:
+        app: __CI_COMMIT_REF_SLUG__
+        track: stable
+    spec:
+      imagePullSecrets:
+        - name: nexus-docker
+      containers:
+      - name: app
+        image: __DOCKER_URL__/__CI_PROJECT_NAMESPACE__/__CI_PROJECT_NAME__:__VERSION__
+        env:
+          - name: DATABASE_HOST
+            value: 'mysql-external'
+          - name: DATABASE_PORT
+            value: '3306'
+          - name: DATABASE_NAME
+            value: 'devops'
+          - name: DATABASE_USER
+            value: 'devops'
+          - name: DATABASE_PASS
+            value: __DATABASE_PASS__
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: 200m
+        livenessProbe:
+          httpGet:
+            path: /version
+            port: 8080
+          initialDelaySeconds: 3
+          timeoutSeconds: 2
+        readinessProbe:
+          httpGet:
+            path: /version
+            port: 8080
+          initialDelaySeconds: 3
+          timeoutSeconds: 2

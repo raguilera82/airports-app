@@ -1,0 +1,8 @@
+kind: Service
+apiVersion: v1
+metadata:
+ name: mysql-external
+ namespace: {{ .Values.namespace }}
+spec:
+ type: ExternalName
+ externalName: mysql-db-local.tntformacion.com

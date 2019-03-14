@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.id }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.id }}
+    version: {{ .Values.tag }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.id }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.id }}
+        version: {{ .Values.tag }}
+    spec:
+      imagePullSecrets:
+        - name: nexus-docker
+      containers:
+      - name: app
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        env:
+          - name: DATABASE_HOST
+            value: 'mysql-external'
+          - name: DATABASE_PORT
+            value: '3306'
+          - name: DATABASE_NAME
+            value: 'devops'
+          - name: DATABASE_USER
+            value: 'devops'
+          - name: DATABASE_PASS
+            value: {{ .Values.database_pass }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: 200m
+        livenessProbe:
+          httpGet:
+            path: /version
+            port: 8080
+          initialDelaySeconds: 3
+          timeoutSeconds: 2
+        readinessProbe:
+          httpGet:
+            path: /version
+            port: 8080
+          initialDelaySeconds: 3
+          timeoutSeconds: 2

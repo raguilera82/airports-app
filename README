@@ -1,0 +1,51 @@
+# Execute in local
+
+## Set environment
+
+Create a .env file with the following content (don't track with git):
+
+export MYSQL_ROOT_PASSWORD=<pass>
+export MYSQL_PASSWORD=<pass>
+export DATABASE_HOST='localhost'
+export DATABASE_PORT='3307'
+export DATABASE_NAME='devops'
+export DATABASE_USER='devops'
+export DATABASE_PASS=<pass>
+
+Modify <pass> with the real password
+
+
+```bash
+$> source .env
+```
+
+## Raise the mysql database
+```bash
+$> docker-compose -f docker/test.yml up -d
+```
+
+
+## Raise the app
+
+```bash
+$> mvn spring-boot:run
+```
+
+Check this url: http://localhost:8080/version
+
+# Set MySQL password on Kubernetes
+
+```bash
+$> kubectl create secret generic mysql-pass --from-literal=password=YOUR_PASSWORD
+```
+
+# Enable access from Kubernetes to Docker registry
+
+```bash
+$> kubectl create \
+    secret docker-registry nexus-docker \
+    --docker-server=nexus-autentia.tntformacion.com:10000 \
+    --docker-username=admin \
+    --docker-password=autentia.2012 \
+    --docker-email=admin@example.org --namespace=devops-airports-app
+```

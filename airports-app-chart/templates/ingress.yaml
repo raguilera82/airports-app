@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .Values.id }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.id }}
+spec:
+  rules:
+  - host: {{ .Values.id }}.{{ .Values.phase }}.tntformacion.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: {{ .Values.id }}.{{ .Values.phase }}
+          servicePort: 8080

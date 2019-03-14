@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: __CI_PROJECT_PATH_SLUG__-__CI_COMMIT_REF_SLUG__
+  namespace: __CI_PROJECT_PATH_SLUG__
+  labels:
+    app: __CI_COMMIT_REF_SLUG__
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: __CI_COMMIT_REF_SLUG__

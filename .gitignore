@@ -1,0 +1,16 @@
+target/
+.mvn/
+mvnw.cmd
+.settings/
+.classpath
+.env
+builds/
+.vscode/settings.json
+.project
+
+manifests/deployment.poc.yaml
+/.metadata/
+
+.allure
+
+.factorypath

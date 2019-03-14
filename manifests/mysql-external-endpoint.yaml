@@ -1,0 +1,9 @@
+kind: Endpoints
+apiVersion: v1
+metadata:
+ name: mysql-external
+subsets:
+ - addresses:
+     - ip: rancher.tntformacion.com
+   ports:
+     - port: 3306

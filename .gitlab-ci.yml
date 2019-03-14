@@ -1,0 +1,176 @@
+stages:
+  - build
+  - login-docker
+  - calculate-version
+  - deploy-image
+  - qa
+  - run
+  - stop
+
+build:
+  stage: build
+  only:
+    - /^release.*$/
+    - master
+    - develop
+  image: maven:3-jdk-8-alpine
+  services:
+    - name: mysql:5.7
+      alias: devops-db-test
+  variables:
+    MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    MYSQL_DATABASE: 'devops'
+    MYSQL_USER: 'devops'
+    MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    DATABASE_HOST: 'devops-db-test'
+    DATABASE_PORT: '3306'
+    DATABASE_NAME: 'devops'
+    DATABASE_USER: 'devops'
+    DATABASE_PASS: ${DATABASE_PASS}
+    NEXUS_USER: ${NEXUS_USER}
+    NEXUS_PASS: ${NEXUS_PASS}
+    NEXUS_URL: ${NEXUS_URL}
+    MAVEN_OPTS: -Dmaven.repo.local=/cache/maven.repository
+  script:
+    - env
+    - mvn clean deploy --settings .m2/settings.xml -Pjar
+  artifacts:
+    paths:
+      - target
+  tags:
+    - docker
+
+calculate-version:
+  stage: calculate-version
+  only:
+    - /^release.*$/
+    - master
+    - develop
+  image: maven:3-jdk-8-alpine
+  variables:
+    MAVEN_OPTS: -Dmaven.repo.local=/cache/maven.repository
+  script:
+    - mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version -l version.log -Pjar
+  artifacts:
+    paths:
+      - version.log
+  tags:
+    - docker
+
+deploy-image:
+  stage: deploy-image
+  only:
+    - /^release.*$/
+    - master
+    - develop
+  image: docker:stable
+  before_script:
+    - docker login -u ${DR_USER} -p ${DR_PASS} ${DR_URL}
+  script:
+    - APP_VERSION="$(grep -v '\[' version.log)"
+    - docker build -t ${DR_URL}/${CI_PROJECT_PATH}:${APP_VERSION} .
+    - docker tag ${DR_URL}/${CI_PROJECT_PATH}:${APP_VERSION} ${DR_URL}/${CI_PROJECT_PATH}:${APP_VERSION}
+    - docker push ${DR_URL}/${CI_PROJECT_PATH}:${APP_VERSION}
+  dependencies:
+    - build
+    - calculate-version
+  tags:
+    - docker
+
+sonar:
+  image: ${DR_URL}/devops/sonar-scanner:3.2.0.1227
+  stage: qa
+  only:
+    - /^release.*$/
+    - master
+    - develop
+  variables:
+    SONAR_URL: ${SONAR_URL}
+    SONAR_PROJECT_KEY: ${CI_PROJECT_NAME}
+    SONAR_PROJECT_NAME: ${CI_PROJECT_NAME} 
+    SONAR_USER: ${SONAR_USER}
+    SONAR_PASS: ${SONAR_PASSWORD}
+  script:
+    - env
+    - APP_VERSION="$(grep -v '\[' version.log)"
+    - /usr/bin/sonar-scanner-run.sh ${APP_VERSION}
+  dependencies:
+    - calculate-version
+    - build
+  tags:
+    - docker
+
+run:
+  image: alpine:3.7
+  stage: run
+  environment:
+    name: ${CI_COMMIT_REF_SLUG}
+    url: http://${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG}-local.tntformacion.com/version
+  only:
+    - /^release.*$/
+    - master
+    - develop
+  dependencies:
+    - calculate-version
+  script:
+    - APP_VERSION="$(grep -v '\[' version.log)"
+    - apk update  && apk add --no-cache curl grep
+    - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+    - chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl
+    - mkdir -p ${HOME}/.kube
+    - cp k8s-config ${HOME}/.kube/config
+    - kubectl version
+    - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get > get_helm.sh
+    - chmod 700 get_helm.sh
+    - ./get_helm.sh
+    - kubectl create namespace ${CI_PROJECT_PATH_SLUG}
+    - helm install --name ${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} ./airports-app-chart\
+      --set replicaCount=1 \
+      --set id=${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} \
+      --set phase=${CI_COMMIT_REF_SLUG} \
+      --set namespace=${CI_PROJECT_PATH_SLUG} \
+      --set image.repository=${DR_URL}/${CI_COMMIT_REF_SLUG}:${APP_VERSION} \
+      --set database_pass=${DATABASE_PASS}
+    #- cd manifests/
+    #- sed -i "s/__CI_COMMIT_REF_SLUG__/${CI_COMMIT_REF_SLUG}/" deployment.yaml ingress.yaml service.yaml
+    #- sed -i "s/__CI_PROJECT_PATH_SLUG__/${CI_PROJECT_PATH_SLUG}/" deployment.yaml ingress.yaml service.yaml
+    #- sed -i "s/__VERSION__/${APP_VERSION}/" deployment.yaml ingress.yaml service.yaml
+    #- sed -i "s/__DATABASE_PASS__/${DATABASE_PASS}/" deployment.yaml
+    #- sed -i "s/__DOCKER_URL__/${DR_URL}/" deployment.yaml
+    #- sed -i "s/__CI_PROJECT_NAMESPACE__/${CI_PROJECT_NAMESPACE}/" deployment.yaml
+    #- sed -i "s/__CI_PROJECT_NAME__/${CI_PROJECT_NAME}/" deployment.yaml
+    #- cat deployment.yaml
+    #- cat service.yaml
+    #- cat ingress.yaml
+    #- kubectl apply -f deployment.yaml
+    #- kubectl apply -f service.yaml
+    #- kubectl apply -f ingress.yaml
+    #- kubectl rollout status -f deployment.yaml
+    - kubectl get all,ing -l app=${CI_COMMIT_REF_SLUG} --namespace=${CI_PROJECT_PATH_SLUG}
+  tags:
+    - docker
+# 
+stop:
+  image: alpine:3.7
+  stage: stop
+  environment:
+    name: ${CI_COMMIT_REF_SLUG}
+    action: stop
+  only:
+    - /^release.*$/
+    - master
+    - develop
+  dependencies:
+    - calculate-version
+  when: manual
+  script:
+    - apk update  && apk add --no-cache curl grep
+    - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+    - chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl
+    - mkdir -p ${HOME}/.kube
+    - cat ${KUBECONFIG} > $HOME/.kube/config
+    - kubectl version
+    - kubectl delete ing -l app=${CI_COMMIT_REF_SLUG} --namespace=${CI_PROJECT_PATH_SLUG}
+    - kubectl delete all -l app=${CI_COMMIT_REF_SLUG} --namespace=${CI_PROJECT_PATH_SLUG}
+  tags:
+    - docker

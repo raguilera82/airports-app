@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: __CI_PROJECT_PATH_SLUG__-__CI_COMMIT_REF_SLUG__
+  namespace: __CI_PROJECT_PATH_SLUG__
+  labels:
+    app: __CI_COMMIT_REF_SLUG__
+spec:
+  rules:
+  - host: __CI_COMMIT_REF_SLUG__-__CI_PROJECT_PATH_SLUG__.tntformacion.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: __CI_PROJECT_PATH_SLUG__-__CI_COMMIT_REF_SLUG__
+          servicePort: 8080

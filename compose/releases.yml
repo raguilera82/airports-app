@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  
+  devops-app-releases:
+    image: nexus.tntformacion.com:10000/devops/app:${APP_VERSION}
+    environment:
+      DATABASE_HOST: 'devops-db-releases'
+      DATABASE_PORT: '3306'
+      DATABASE_NAME: 'devops'
+      DATABASE_USER: 'devops'
+      DATABASE_PASS: ${DATABASE_PASS}
+    links:
+    - devops-db-releases
+    depends_on:
+    - devops-db-releases
+    ports:
+    - "8050:8080"
+    networks:
+    - devops_releases
+
+  devops-db-releases:
+    image: mysql:5.7
+    volumes:
+      - db_data_releases:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: 'devops'
+      MYSQL_USER: 'devops'
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    networks:
+    - devops_releases
+
+volumes:
+  db_data_releases:
+
+networks:
+  devops_releases:
+  
