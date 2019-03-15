@@ -17,6 +17,9 @@ build:
   services:
     - name: mysql:5.7
       alias: devops-db-test
+  cache:
+    paths:
+      - maven.repository/
   variables:
     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     MYSQL_DATABASE: 'devops'
@@ -30,7 +33,7 @@ build:
     NEXUS_USER: ${NEXUS_USER}
     NEXUS_PASS: ${NEXUS_PASS}
     NEXUS_URL: ${NEXUS_URL}
-    MAVEN_OPTS: -Dmaven.repo.local=/cache/maven.repository
+    MAVEN_OPTS: "--batch-mode -Dmaven.repo.local=maven.repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN"
   script:
     - env
     - mvn clean deploy --settings .m2/settings.xml -Pjar
@@ -47,8 +50,11 @@ calculate-version:
     - master
     - develop
   image: maven:3-jdk-8-alpine
+  cache:
+    paths:
+      - maven.repository/
   variables:
-    MAVEN_OPTS: -Dmaven.repo.local=/cache/maven.repository
+    MAVEN_OPTS: "--batch-mode -Dmaven.repo.local=maven.repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN"
   script:
     - mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version -l version.log -Pjar
   artifacts:
