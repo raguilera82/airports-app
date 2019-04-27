@@ -120,12 +120,13 @@ run:
     - calculate-version
   script:
     - APP_VERSION="$(grep -v '\[' version.log)"
+    - echo $APP_VERSION
     - mkdir -p ${HOME}/.kube
     - cp k8s-config ${HOME}/.kube/config
     - kubectl version
     - export COMMIT_TIME=$(git show -s --format=%ct $CI_COMMIT_SHA)
     - echo ${COMMIT_TIME}
-    - helm upgrade ${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} ./airports-app-chart --install --namespace=${CI_PROJECT_PATH_SLUG} --set replicaCount=1 --set id=${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} --set phase=${CI_COMMIT_REF_SLUG} --set image.repository=${DR_URL}/${CI_PROJECT_PATH} --set image.tag=${APP_VERSION} --set database_pass=${DATABASE_PASS} --set suffix="-local"  --set domain="tntformacion.com" --set-string timestamp=${COMMIT_TIME}
+    - helm upgrade --recreate-pods ${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} ./airports-app-chart --install --namespace=${CI_PROJECT_PATH_SLUG} --set replicaCount=1 --set id=${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} --set phase=${CI_COMMIT_REF_SLUG} --set image.repository=${DR_URL}/${CI_PROJECT_PATH} --set image.tag=${APP_VERSION} --set database_pass=${DATABASE_PASS} --set suffix="-local"  --set domain="tntformacion.com" --set-string timestamp=${COMMIT_TIME}
     - kubectl get all,ing -l app=${CI_COMMIT_REF_SLUG}-${CI_PROJECT_PATH_SLUG} --namespace=${CI_PROJECT_PATH_SLUG}
   tags:
     - docker
