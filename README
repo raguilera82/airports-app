@@ -36,7 +36,7 @@ Check this url: http://localhost:8080/version
 # Set MySQL password on Kubernetes
 
 ```bash
-$> kubectl create secret generic mysql-pass --from-literal=password=YOUR_PASSWORD
+$> kubectl create secret generic mysql-pass --from-literal=password=YOUR_PASSWORD --namespace=devops-airports-app
 ```
 
 # Enable access from Kubernetes to Docker registry
@@ -44,8 +44,30 @@ $> kubectl create secret generic mysql-pass --from-literal=password=YOUR_PASSWOR
 ```bash
 $> kubectl create \
     secret docker-registry nexus-docker \
-    --docker-server=nexus-autentia.tntformacion.com:10000 \
+    --docker-server=nexus-dr.tntformacion.com:10001 \
     --docker-username=admin \
-    --docker-password=autentia.2012 \
+    --docker-password=autentia \
     --docker-email=admin@example.org --namespace=devops-airports-app
 ```
+
+# If not installed yet, you have to install tiller on Kubernetes
+
+$> kubectl -n kube-system create serviceaccount tiller
+$> kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+$> helm init --service-account tiller
+
+# Set Ingress Basic Auth
+
+$> htpasswd -bc auth username password
+
+$>  kubectl create secret generic ingress-basic-auth --from-file=auth -n devops-airports-app
+
+# Set Secure tls
+
+$> kubectl create secret tls secure-tls --key privkey1.pem --cert fullchain1.pem -n devops-airports-app
+
+# Create mysql database into the cluster
+
+$> kubectl apply -f manifests/mysql/deployment.yaml
+
+$> kubectl apply -f manifests/mysql/service.yaml 
