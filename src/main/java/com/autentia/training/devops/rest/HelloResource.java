@@ -14,7 +14,7 @@ public class HelloResource {
 
     @GetMapping("/version")
     public String hello() {
-        return "VERSIÓN: " + this.settingsConfig.getVersion();
+        return "VERSIÓN UPM: " + this.settingsConfig.getVersion();
     }
     
     @GetMapping("/raguilera")
