@@ -5,6 +5,7 @@ metadata:
   labels:
     app: {{ .Values.id }}
     version: {{ .Values.tag }}
+    timestamp: "{{ .Values.timestamp }}"
   annotations:
     timestamp: "{{ .Values.timestamp }}"
 spec:
