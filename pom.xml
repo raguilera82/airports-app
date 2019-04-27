@@ -5,7 +5,7 @@
 
 	<groupId>com.autentia</groupId>
 	<artifactId>airports-app</artifactId>
-	<version>0.7.0</version>
+	<version>0.8.0</version>
 	<packaging>${packaging.type}</packaging>
 
 	<name>devops-airports-app</name>
