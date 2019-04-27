@@ -44,9 +44,9 @@ $> kubectl create secret generic mysql-pass --from-literal=password=YOUR_PASSWOR
 ```bash
 $> kubectl create \
     secret docker-registry nexus-docker \
-    --docker-server=nexus-dr.tntformacion.com:10001 \
+    --docker-server=nexus-local.tntformacion.com:10000 \
     --docker-username=admin \
-    --docker-password=autentia \
+    --docker-password=YOUR_PASSWORD \
     --docker-email=admin@example.org --namespace=devops-airports-app
 ```
 
