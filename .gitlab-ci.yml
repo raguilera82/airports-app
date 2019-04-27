@@ -36,7 +36,7 @@ build:
     MAVEN_OPTS: "-Dmaven.repo.local=maven.repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN"
   script:
     - env
-    - mvn clean deploy --settings .m2/settings.xml -Pjar
+    - mvn clean deploy --settings .m2/settings.xml -Pjar -Dmaven.test.skip=true
   artifacts:
     paths:
       - target
