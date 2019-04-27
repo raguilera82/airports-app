@@ -14,4 +14,4 @@ database_pass: "notrealpassword"
 image:
   repository: "generic-repository"
   tag: "0.0.0"
-  pullPolicy: IfNotPresent
+  pullPolicy: Always

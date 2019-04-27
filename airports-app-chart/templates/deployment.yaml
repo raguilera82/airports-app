@@ -5,6 +5,9 @@ metadata:
   labels:
     app: {{ .Values.id }}
     version: {{ .Values.tag }}
+    timestamp: "{{ .Values.timestamp }}"
+  annotations:
+    timestamp: "{{ .Values.timestamp }}"
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -14,7 +17,7 @@ spec:
     metadata:
       labels:
         app: {{ .Values.id }}
-        version: {{ .Values.tag }}
+        version: {{ .Values.image.tag }}
     spec:
       imagePullSecrets:
         - name: nexus-docker
