@@ -33,6 +33,10 @@ $> mvn spring-boot:run
 
 Check this url: http://localhost:8080/version
 
+# Create namespace
+
+$> kubectl create namespace devops-airports-app
+
 # Set MySQL password on Kubernetes
 
 ```bash
